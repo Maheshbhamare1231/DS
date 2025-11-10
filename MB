@@ -1,0 +1,124 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct Member {
+    int prn;
+    char name[50];
+    struct Member* next;
+} Member;
+Member* head1 = NULL; 
+Member* head2 = NULL; 
+Member* createMember(int prn, char name[]) {
+    Member* m = (Member*)malloc(sizeof(Member));
+    m->prn = prn;
+    strcpy(m->name, name);
+    m->next = NULL;
+    return m;
+}
+void addPresident(Member** head, int prn, char name[]) {
+    Member* m = createMember(prn, name);
+    m->next = *head;
+    *head = m;
+}
+void addSecretary(Member** head, int prn, char name[]) {
+    Member* m = createMember(prn, name);
+    if (!*head) *head = m;
+    else {
+        Member* temp = *head;
+        while (temp->next) temp = temp->next;
+        temp->next = m;
+    }
+}
+void addMember(Member** head, int prn, char name[]) {
+    Member* m = createMember(prn, name);
+    if (!*head || !(*head)->next) {
+        printf("Add president and secretary first.\n");
+        return;
+    }
+    Member* temp = *head;
+    while (temp->next->next) temp = temp->next;
+    m->next = temp->next;
+    temp->next = m;
+}
+void deletePresident(Member** head) {
+    if (*head) {
+        Member* temp = *head;
+        *head = temp->next;
+        free(temp);
+    }
+}
+void deleteSecretary(Member** head) {
+    if (!*head || !(*head)->next) return;
+    Member* temp = *head;
+    while (temp->next->next) temp = temp->next;
+    free(temp->next);
+    temp->next = NULL;
+}
+void deleteMember(Member** head, int prn) {
+    if (!*head || (*head)->prn == prn) {
+        printf("Use deletePresident for president.\n");
+        return;
+    }
+    Member* temp = *head;
+    while (temp->next && temp->next->prn != prn) temp = temp->next;
+    if (temp->next) {
+        Member* del = temp->next;
+        temp->next = del->next;
+        free(del);
+    } else {
+        printf("Member not found.\n");
+    }
+}
+int countMembers(Member* head) {
+    int count = 0;
+    while (head) {
+        count++;
+        head = head->next;
+    }
+    return count;
+}
+void display(Member* head) {
+    while (head) {
+        printf("PRN: %d, Name: %s\n", head->prn, head->name);
+        head = head->next;
+    }
+}
+Member* concatenate(Member* h1, Member* h2) {
+    if (!h1) return h2;
+    Member* temp = h1;
+    while (temp->next) temp = temp->next;
+    temp->next = h2;
+    return h1;
+}
+int main() {
+    addPresident(&head1, 101, "Alice");
+    addSecretary(&head1, 105, "Eve");
+    addMember(&head1, 102, "Bob");
+    addMember(&head1, 103, "Charlie");
+    addMember(&head1, 104, "David");
+
+    addPresident(&head2, 201, "Xavier");
+    addSecretary(&head2, 205, "Zoe");
+    addMember(&head2, 202, "Yash");
+
+    printf("\nDivision 1 Members:\n");
+    display(head1);
+    printf("\nDivision 2 Members:\n");
+    display(head2);
+
+    printf("\nTotal Members in Division 1: %d\n", countMembers(head1));
+
+    head1 = concatenate(head1, head2);
+    printf("\nAfter Concatenation:\n");
+    display(head1);
+
+    deleteMember(&head1, 103);
+    deleteSecretary(&head1);
+    deletePresident(&head1);
+
+    printf("\nAfter Deletions:\n");
+    display(head1);
+
+    return 0;
+}
